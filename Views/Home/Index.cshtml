@@ -1,0 +1,56 @@
+@model IEnumerable<Product>
+
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<div class="container mt-4">
+    <!-- Banner chào mừng -->
+    <div class="jumbotron bg-light p-5 rounded">
+        <h1 class="display-4">🪵 Chào mừng đến WebBanGo</h1>
+        <p class="lead">Chuyên cung cấp gỗ xây dựng và nội thất cao cấp</p>
+        <hr class="my-4">
+        <p>Khám phá hơn 60 danh mục sản phẩm với chất lượng tốt nhất</p>
+        <a class="btn btn-primary btn-lg" asp-controller="Products" asp-action="Index">Xem sản phẩm</a>
+    </div>
+
+    <!-- Sản phẩm mới nhất -->
+    <h2 class="mt-5 mb-3">📦 Sản phẩm mới nhất</h2>
+    
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            @foreach (var product in Model)
+            {
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100">
+                        @if (!string.IsNullOrEmpty(product.ImageUrl))
+                        {
+                            <img src="@product.ImageUrl" class="card-img-top" alt="@product.Name" style="height: 200px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <span class="text-white">No Image</span>
+                            </div>
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@product.Name</h5>
+                            <p class="text-muted small">@product.Category?.Name</p>
+                            <p class="card-text"><strong>Loại gỗ:</strong> @product.WoodType</p>
+                            <p class="text-primary fw-bold">@product.Price.ToString("N0") VNĐ/@product.Unit</p>
+                            <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" 
+                               class="btn btn-outline-primary btn-sm w-100">Chi tiết</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <p>Chưa có sản phẩm nào. Vui lòng thêm sản phẩm vào database.</p>
+        </div>
+    }
+</div>

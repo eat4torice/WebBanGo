@@ -1,0 +1,137 @@
+@model IEnumerable<Product>
+
+@{
+    ViewData["Title"] = "Sản phẩm";
+    var categories = ViewBag.Categories as IEnumerable<Category>;
+    var currentCategory = ViewBag.CurrentCategory as Category;
+    var searchQuery = ViewBag.SearchQuery as string;
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var totalPages = ViewBag.TotalPages ?? 1;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar Categories -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📁 Danh mục</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a asp-controller="Products" asp-action="Index" 
+                       class="list-group-item list-group-item-action @(currentCategory == null && string.IsNullOrEmpty(searchQuery) ? "active" : "")">
+                        Tất cả sản phẩm
+                    </a>
+                    @if (categories != null)
+                    {
+                        @foreach (var cat in categories)
+                        {
+                            <a asp-controller="Products" asp-action="Index" asp-route-categoryId="@cat.Id"
+                               class="list-group-item list-group-item-action @(currentCategory?.Id == cat.Id ? "active" : "")">
+                                @cat.Name
+                            </a>
+                            @if (cat.SubCategories != null && cat.SubCategories.Any())
+                            {
+                                @foreach (var sub in cat.SubCategories)
+                                {
+                                    <a asp-controller="Products" asp-action="Index" asp-route-categoryId="@sub.Id"
+                                       class="list-group-item list-group-item-action ps-4 @(currentCategory?.Id == sub.Id ? "active" : "")">
+                                        → @sub.Name
+                                    </a>
+                                }
+                            }
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Search Box -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6>🔍 Tìm kiếm</h6>
+                    <form asp-controller="Products" asp-action="Index" method="get">
+                        <input type="text" name="search" class="form-control" placeholder="Tên sản phẩm, loại gỗ..." value="@searchQuery" />
+                        <button type="submit" class="btn btn-primary btn-sm w-100 mt-2">Tìm kiếm</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="col-md-9">
+            @if (!string.IsNullOrEmpty(searchQuery))
+            {
+                <div class="alert alert-info">
+                    Kết quả tìm kiếm cho: <strong>@searchQuery</strong>
+                </div>
+            }
+            else if (currentCategory != null)
+            {
+                <h3>@currentCategory.Name</h3>
+                @if (!string.IsNullOrEmpty(currentCategory.Description))
+                {
+                    <p class="text-muted">@currentCategory.Description</p>
+                }
+            }
+            else
+            {
+                <h3>Tất cả sản phẩm</h3>
+            }
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="row">
+                    @foreach (var product in Model)
+                    {
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                {
+                                    <img src="@product.ImageUrl" class="card-img-top" alt="@product.Name" style="height: 200px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                        <span class="text-white">No Image</span>
+                                    </div>
+                                }
+                                <div class="card-body">
+                                    <h6 class="card-title">@product.Name</h6>
+                                    <p class="text-muted small mb-1">@product.Category?.Name</p>
+                                    <p class="mb-1"><small>Loại gỗ: @product.WoodType</small></p>
+                                    <p class="text-primary fw-bold mb-2">@product.Price.ToString("N0") VNĐ/@product.Unit</p>
+                                    <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" 
+                                       class="btn btn-outline-primary btn-sm w-100">Chi tiết</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (totalPages > 1)
+                {
+                    <nav>
+                        <ul class="pagination justify-content-center">
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <a class="page-link" asp-controller="Products" asp-action="Index" 
+                                       asp-route-page="@i" asp-route-categoryId="@currentCategory?.Id" asp-route-search="@searchQuery">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    Không tìm thấy sản phẩm nào.
+                </div>
+            }
+        </div>
+    </div>
+</div>
